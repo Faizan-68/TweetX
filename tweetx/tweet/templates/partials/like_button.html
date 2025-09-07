@@ -1,0 +1,12 @@
+<div id="like-section-{{ tweet.id }}">
+    <a href="{% url 'like_tweet' tweet.id %}" 
+       class="btn btn-sm {% if tweet.id in liked_tweet_ids %}btn-outline-primary{% else %}btn-outline-secondary{% endif %}"
+       hx-post="{% url 'like_tweet' tweet.id %}"
+       hx-target="#like-section-{{ tweet.id }}"
+       hx-swap="outerHTML">
+        <i class="fa-regular fa-thumbs-up me-1"></i>
+        <span id="like-text-{{ tweet.id }}">
+            {% if tweet.likes.count > 0 %}{{ tweet.likes.count }} Like{% else %}Like{% endif %}
+        </span>
+    </a>
+</div>

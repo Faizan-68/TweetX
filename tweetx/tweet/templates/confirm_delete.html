@@ -1,0 +1,21 @@
+{% extends "layout.html" %} {% block title %} Delete Tweet {% endblock %}
+
+{% block content %}
+<style>
+  .center-delete-container {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+</style>
+<div class="center-delete-container">
+  <h2>Are you sure to delete this tweet?</h2>
+  <form method="post" class="mt-3">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Confirm</button>
+    <a href="{% url 'home' %}" class="btn btn-success ms-2">Cancel</a>
+  </form>
+</div>
+{% endblock %}
