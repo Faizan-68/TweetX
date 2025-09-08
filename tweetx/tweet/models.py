@@ -12,9 +12,14 @@ class Tweet(models.Model):
     def __str__(self):
         return f'{self.user.username} - {self.text[0:20]}'
 
+
     @property
     def total_likes(self):
         return self.likes.count()
+    
+    @property
+    def total_comments(self):
+        return self.comments.count()
 
 class Like(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -35,10 +40,6 @@ class Comment(models.Model):
 
 
     def __str__(self):
-        return f'{self.user.username} - {self.tweet.comment[0:10]}'
-    
-    @property
-    def total_comments(self):
-        return self.comments.count()
+        return f'{self.user.username} - {self.comment[0:10]}'
 
     

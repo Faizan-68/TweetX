@@ -48,35 +48,25 @@
                         </span>
                     </a>
                 </div>
+                <div id="comments-count-{{ tweet.id }}"
+                     hx-get="{% url 'get_comments_count' tweet.id %}"
+                     hx-trigger="updateCommentsCount-{{ tweet.id }} from:body"
+                     hx-swap="outerHTML">
                 <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#comments-{{ tweet.id }}" aria-expanded="false" aria-controls="comments-{{ tweet.id }}">
-                  <i class="fa-regular fa-comment me-1"></i> Comments
+                  <i class="fa-regular fa-comment me-1"></i> 
+                  {% if tweet.total_comments > 0 %}{{ tweet.total_comments }} Comment{% if tweet.total_comments > 1 %}s{% endif %}{% else %}Comments{% endif %}
                 </button>
-              </div>
-
-              <div id="comments-{{ tweet.id }}" class="collapse mt-3">
-                <div class="comments-section">
-                  <div class="comments-list">
-                    <div class="card mt-1 mb-2 border p-1 bg-dark text-light">
-
-                      <div class="card-title  ps-2 text-muted">{{ '@moin' }}</div>
-                      
-                        <p class="card-text  ps-2">{{'Good Work!' }}</p>
-                      
-                    </div>
-                    <div class="card mt-1 mb-2 border p-1 bg-dark text-light">
-
-                      <div class="card-title ps-2 text-muted">{{ '@moin' }}</div>
-
-                        <p class="card-text ps-2">{{'Good Work! hope you will do better next time.' }}</p>
-
-                    </div>
-                  </div>
-                  <form class="comment-form d-flex gap-2 mt-2" method="post" action="#" onsubmit="return false;">
-                    <input type="text" class="form-control form-control-sm" name="comment" placeholder="Write a comment..." />
-                    <button type="submit" class="btn btn-primary btn-sm">Post</button>
-                  </form>
                 </div>
               </div>
+
+            <div id="comments-{{ tweet.id }}" class="collapse mt-3">
+                <div class="comments-section" id="comments-section-{{ tweet.id }}">
+                    
+                    {% with comments=tweet.comments.all tweet=tweet %}
+                        {% include 'partials/comments_section.html' %}
+                    {% endwith %}
+                </div>
+            </div>
             </div>
           </div>
         </div>

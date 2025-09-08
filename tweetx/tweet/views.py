@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import Tweet, Like
+from .models import Tweet, Like, Comment
 from django.http import JsonResponse
 from .forms import TweetForm,UserRegistrationForm
 from django.contrib.auth.decorators import login_required
@@ -14,10 +14,13 @@ from django.http import HttpResponse
 
 def home(request):
     tweets = Tweet.objects.all().order_by('-created_at')
+    comments = {}
+    for tweet in tweets:
+        comments[tweet.id] = tweet.comments.all().order_by('-created_at')
     liked_tweet_ids = []
     if request.user.is_authenticated:
         liked_tweet_ids = Like.objects.filter(user = request.user).values_list('tweet_id', flat=True)
-    return render(request, 'index.html', {'tweets':tweets,'liked_tweet_ids':liked_tweet_ids})
+    return render(request, 'index.html', {'tweets':tweets,'liked_tweet_ids':liked_tweet_ids, 'comments': comments})
 
 
 @login_required
@@ -116,3 +119,51 @@ def like_tweet(request, tweet_id):
     return render(request, 'partials/like_button.html', context)
 
 
+def add_comment(request, tweet_id):
+    if request.user.is_anonymous:
+        login_url = reverse('login')
+        response = HttpResponse(status=204)
+        response['HX-Redirect'] = login_url
+        return response
+    tweet = get_object_or_404(Tweet, pk=tweet_id)
+    if request.method == 'POST':
+        comment_text = request.POST.get('comment', '').strip()
+
+        if comment_text:
+            if len(comment_text)<=280:
+                Comment.objects.create(user = request.user, tweet = tweet, comment = comment_text)
+        
+    comments = tweet.comments.all().order_by('-created_at')
+    context = {
+        'comments': comments,
+        'tweet': tweet
+    }
+    response = render(request, 'partials/comments_list.html', context)
+    # Add trigger to update comments count
+    response['HX-Trigger'] = f'updateCommentsCount-{tweet_id}'
+    return response
+
+
+def get_comments_count(request, tweet_id):
+    tweet = get_object_or_404(Tweet, pk=tweet_id)
+    context = {'tweet': tweet}
+    return render(request, 'partials/comments_count.html', context)
+
+
+@login_required
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id, user=request.user)
+    tweet = comment.tweet
+    
+    if request.method == 'POST':
+        comment.delete()
+        
+    comments = tweet.comments.all().order_by('-created_at')
+    context = {
+        'comments': comments,
+        'tweet': tweet
+    }
+    response = render(request, 'partials/comments_list.html', context)
+    # Add trigger to update comments count
+    response['HX-Trigger'] = f'updateCommentsCount-{tweet.id}'
+    return response
