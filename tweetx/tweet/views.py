@@ -5,6 +5,8 @@ from .forms import TweetForm,UserRegistrationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.contrib import messages
+from django.urls import reverse
+from django.http import HttpResponse
 
 
 
@@ -90,6 +92,12 @@ def my_tweets(request):
 
 
 def like_tweet(request, tweet_id):
+    if not request.user.is_authenticated:
+            login_url = reverse('login') 
+            response = HttpResponse(status=204)
+            response['HX-Redirect'] = login_url
+            return response
+
     tweet = get_object_or_404(Tweet, pk=tweet_id)
     like = Like.objects.filter(user=request.user, tweet=tweet).first()
     
